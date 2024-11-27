@@ -5,7 +5,25 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken'
 const router=Router();
 
-router.post("/register",async(req:Request,res:Response)=>{
+
+export const verifyToken=(req:Request,res:Response,next:NextFunction)=>{
+    const authHeader=req.headers.authorization;
+    if(authHeader){
+        jwt.verify(authHeader,"secret",(err)=>{
+         if(err){
+            return res.sendStatus(403);
+         }
+         next();
+
+        });
+    }else{
+
+        return res.sendStatus(401);
+    }
+
+}
+
+router.post("/register",verifyToken,async(req:Request,res:Response)=>{
     const{username,password}=req.body;
     try{
     const user=await UserModel.findOne({username});
@@ -27,7 +45,7 @@ router.post("/register",async(req:Request,res:Response)=>{
 
 });
 
-router.post("/login",async(req:Request,res:Response)=>{
+router.post("/login",verifyToken,async(req:Request,res:Response)=>{
     const{username,password}=req.body;
     try {
         const user:IUser=await UserModel.findOne({username});
@@ -51,21 +69,23 @@ router.post("/login",async(req:Request,res:Response)=>{
     }
 })
 
-export const verifyToken=(req:Request,res:Response,next:NextFunction)=>{
-    const authHeader=req.headers.authorization;
-    if(authHeader){
-        jwt.verify(authHeader,"secret",(err)=>{
-         if(err){
-            return res.sendStatus(403);
-         }
-         next();
 
-        });
-    }else{
 
-        return res.sendStatus(401);
-    }
+ router.get("/available-money/:userID",verifyToken,async(req:Request,res:Response)=>{
+  const {userID}=req.params
 
-}
- 
+  try{
+     const user=await UserModel.findById(userID)
+     if(!user){
+        res.status(400).json({type:UserErrors.NO_USER_FOUND})
+     }
+     res.json({availableMoney:user.availableMoney});
+     
+     
+  } catch(err){
+    res.status(500).json({err});
+  }
+
+
+ });
 export {router as userRouter};
