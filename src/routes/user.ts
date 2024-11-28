@@ -23,7 +23,7 @@ export const verifyToken=(req:Request,res:Response,next:NextFunction)=>{
 
 }
 
-router.post("/register",verifyToken,async(req:Request,res:Response)=>{
+router.post("/register",async(req:Request,res:Response)=>{
     const{username,password}=req.body;
     try{
     const user=await UserModel.findOne({username});
@@ -45,7 +45,7 @@ router.post("/register",verifyToken,async(req:Request,res:Response)=>{
 
 });
 
-router.post("/login",verifyToken,async(req:Request,res:Response)=>{
+router.post("/login",async(req:Request,res:Response)=>{
     const{username,password}=req.body;
     try {
         const user:IUser=await UserModel.findOne({username});
